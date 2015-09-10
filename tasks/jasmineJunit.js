@@ -38,8 +38,14 @@
                 cwd = (l.cwd || CURRENT_PATH) + path.sep,
                 testDir = cwd + l.test,
                 testDirExists = grunt.file.exists(testDir),
-                reportFile = cwd + l.reports.unit,
+                reportFile,
+                reportFileExists;
+
+            glob.sync(l.reports.unit, {cwd: cwd, root: '/'}).forEach(function (file) {
+                reportFile = cwd + file;
                 reportFileExists = grunt.file.exists(reportFile);
+            });
+
             if (l.test && testDirExists) {
                 if (l.reports.unit && reportFileExists) {
                     // #2
@@ -63,8 +69,13 @@
                     });
 
                     // #4
-                    var content = new XmlDocument(grunt.file.read(reportFile));
-                    var testsuites = content.childrenNamed("testsuite");
+                    var content = new XmlDocument(grunt.file.read(reportFile)),
+                        testsuites;
+                    if (content.name === 'testsuite') {
+                        testsuites = [content];
+                    } else {
+                        testsuites = content.childrenNamed("testsuite");
+                    }
                     for (var i = 0; i < testsuites.length; i++) {
                         testsuites[i].eachChild(function (testcase) {
                             if (testcase.name === 'testcase') {
@@ -83,7 +94,7 @@
                                     m.tests = _.without(m.tests, name);
                                 }
                                 testcase.attr.name = xmlEntities.encode(name);
-                                testcase.attr.classname = matchingSpec;
+                                testcase.attr.classname = matchingSpec.replace(/\./g, '_');
                             }
                         });
                     }
