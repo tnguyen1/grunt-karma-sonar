@@ -36,6 +36,15 @@ module.exports = function (grunt) {
         });
     }
 
+    function cleanTestFilenames(defaultOutputDir) {
+        var files = glob.sync('test/**/*.js', {cwd: defaultOutputDir, realpath: true});
+        files.forEach(function (file) {
+            var cleanBasename = path.basename(file, path.extname(file)).replace(/\./g, '_');
+            var destination = path.join(path.dirname(file), cleanBasename + path.extname(file));
+            fs.renameSync(file, destination);
+        });
+    }
+
     /**
      * Deep merge json objects.
      * @param original The original object.
@@ -164,7 +173,9 @@ module.exports = function (grunt) {
 
                         testGlobs.forEach(function (g) {
                             copyFiles(g, sonarOptions.defaultOutputDir, 'test');
+                            cleanTestFilenames(sonarOptions.defaultOutputDir);
                         });
+
                         callback(null, 200);
                     },
                     //#5

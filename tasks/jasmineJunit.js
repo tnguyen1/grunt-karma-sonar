@@ -32,7 +32,7 @@
             JASMINE_TESTCASE_REGEX = /[^\w]it\s?\([\'\"](.*)[\'\"]/g,
             resultContent = PREFIX;
 
-        // #1 
+        // #1
         locations.forEach(function (l) {
             var specs = [],
                 cwd = (l.cwd || CURRENT_PATH) + path.sep,
@@ -53,8 +53,10 @@
                             for (var i = 0, len = matches.length; i < len; i++) {
                                 tests.push(xmlEntities.encode(matches[i].replace(JASMINE_TESTCASE_REGEX, '$1')).replace(/\\/g, '')); // remove escaped characters
                             }
+                            // clean basename (replace dot with underscore) + rename file
+                            var cleanBasename = path.basename(file, path.extname(file)).replace(/\./g, '_');
                             specs.push({
-                                'name': path.basename(file, path.extname(file)),
+                                'name': cleanBasename,
                                 'tests': tests
                             });
                         }
